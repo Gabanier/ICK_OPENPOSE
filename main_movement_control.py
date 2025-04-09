@@ -3,6 +3,8 @@ import numpy as np
 import math
 import mediapipe as mp
 import pyautogui
+from util.utils import CameraCalibrateAndRemoveDist 
+from typing import Tuple
 
 directions = [
         ((75, 105), "Gora"),
@@ -23,7 +25,15 @@ hands = mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5
 
 screen_width, screen_height = pyautogui.size()
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
+
+SRC_DIR:str = "img"
+pattern_size:Tuple[int,int] = (6,8) # (rows,cols)
+img_size:Tuple[int,int] = (480,640)
+
+CCRD = CameraCalibrateAndRemoveDist(SRC_DIR,pattern_size,img_size)
+CCRD.find_chessboard_corners()
+CCRD.find_calibration_params()
 
 while cap.isOpened():
     ret, frame = cap.read()
@@ -31,6 +41,7 @@ while cap.isOpened():
         break
     
     frame = cv2.flip(frame, 1)
+    frame = CCRD.undistort_image(frame)
     h, w, _ = frame.shape
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     result = hands.process(rgb_frame)
