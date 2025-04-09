@@ -4,10 +4,12 @@ from pathlib import Path
 from utils import CameraCalibrateAndRemoveDist
 from glob import glob
 from typing import Tuple
+import os
 
 
 def get_calibration_images(src_dir:str,filename:str="checkerboard"):
-
+    src = Path(src_dir)
+    src.mkdir(parents=True, exist_ok=True)
     cap = cv.VideoCapture(0)
     ite = 0
     while cap.isOpened():
@@ -18,7 +20,7 @@ def get_calibration_images(src_dir:str,filename:str="checkerboard"):
         if key == ord('q'):
             break
         elif key == ord('s'):
-            cv.imwrite(Path(src_dir) / f"{filename}_{ite}.png", img)
+            cv.imwrite(src / f"{filename}_{ite}.png", img)
             print(f"Saved {filename}_{ite}.png")
             ite += 1
              
