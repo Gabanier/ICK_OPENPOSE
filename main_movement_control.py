@@ -6,6 +6,8 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import pyautogui
 from util.utils import CameraCalibrateAndRemoveDist 
+from util.communication import UDPClient, create_message
+from util.config import UDP_ADDRESS, UDP_PORT
 from typing import Tuple
 from pathlib import Path
 import requests
@@ -45,6 +47,8 @@ def main(src_dir:str,pattern_size:Tuple[int,int],img_size:Tuple[int,int]):
     CCRD.find_chessboard_corners()
     CCRD.find_calibration_params()
 
+    client = UDPClient()
+
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -61,6 +65,8 @@ def main(src_dir:str,pattern_size:Tuple[int,int],img_size:Tuple[int,int]):
         
         # result = hands.process(rgb_frame1)
         recognition_result = recognizer.recognize(rgb_frame)
+
+        direction = "None"
         
         # if result.multi_hand_landmarks:
         if recognition_result.hand_landmarks:
@@ -112,6 +118,10 @@ def main(src_dir:str,pattern_size:Tuple[int,int],img_size:Tuple[int,int]):
         
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+        
+        message = create_message(direction)
+        if message is not None:
+            client.send(UDP_ADDRESS, UDP_PORT, message)
 
     cap.release()
     cv2.destroyAllWindows()
