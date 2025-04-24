@@ -121,9 +121,8 @@ def main(src_dir:str,pattern_size:Tuple[int,int],img_size:Tuple[int,int]):
             break
         
         message = create_message(direction)
-        if message is not None:
-            message_counter += 1
-            client.sendto(config.UDP_ADDRESS, config.UDP_PORT, message)
+        client.sendto(config.UDP_ADDRESS, config.UDP_PORT, message)
+        message_counter += 1
 
     cap.release()
     cv2.destroyAllWindows()

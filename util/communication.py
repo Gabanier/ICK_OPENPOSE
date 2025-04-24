@@ -3,10 +3,9 @@ from util import config
 
 
 def create_message(direction: str)-> str:
-    if direction == "None":
-        return None
     
-    map = {"Gora" : "1000",
+    map = {"None" : "0000",
+           "Gora" : "1000",
            "Dol" : "0100",
            "Lewo" : "0010",
            "Prawo" : "0001",
