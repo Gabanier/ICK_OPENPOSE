@@ -26,6 +26,9 @@ DIRECTIONS = [
         ((285, 345), "Dol-Prawo")
     ]
 
+def distance(p1, p2):
+    return math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2)
+
 def main(src_dir:str,pattern_size:Tuple[int,int],img_size:Tuple[int,int]):
     global DIRECTIONS
 
@@ -76,21 +79,28 @@ def main(src_dir:str,pattern_size:Tuple[int,int],img_size:Tuple[int,int]):
             for hand_landmarks in recognition_result.hand_landmarks:
                 # finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP] 
                 # wrist = hand_landmarks.landmark[mp_hands.HandLandmark.WRIST]
-                finger_tip = hand_landmarks[mp_hands.HandLandmark.INDEX_FINGER_TIP] 
+                finger_tip = hand_landmarks[mp_hands.HandLandmark.INDEX_FINGER_TIP]
+                finger_base = hand_landmarks[mp_hands.HandLandmark.INDEX_FINGER_MCP] 
                 wrist = hand_landmarks[mp_hands.HandLandmark.WRIST]
                 
-                x, y = int(finger_tip.x * w), int(finger_tip.y * h)
+                dist = distance(finger_base, finger_tip)
+                if dist < 0.12:
+                    direction = "None"
+                    # direction = "0000"
+                else:
                 
-                dx = finger_tip.x - wrist.x
-                dy = wrist.y - finger_tip.y
-                angle_rad = math.atan2(dy, dx)
-                angle_deg = (math.degrees(angle_rad) + 360) % 360
-                cv2.putText(frame, f"{int(angle_deg)} st.", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-                
-                direction = "None"
-                for (lb, ub), name in DIRECTIONS:
-                    if lb <= angle_deg <= ub:
-                        direction = name
+                    x, y = int(finger_tip.x * w), int(finger_tip.y * h)
+                    
+                    dx = finger_tip.x - wrist.x
+                    dy = wrist.y - finger_tip.y
+                    angle_rad = math.atan2(dy, dx)
+                    angle_deg = (math.degrees(angle_rad) + 360) % 360
+                    cv2.putText(frame, f"{int(angle_deg)} st.", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+                    
+                    direction = "None"
+                    for (lb, ub), name in DIRECTIONS:
+                        if lb <= angle_deg <= ub:
+                            direction = name
                 
                 cv2.putText(frame, f"Sterowanie: {direction}", (10, 110), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
                 gesture = recognition_result.gestures[index][0].category_name
