@@ -1,17 +1,19 @@
 import socket
+from util import config
+
 
 def create_message(direction: str)-> str:
     if direction == "None":
         return None
     
-    map = {"Gora" : "w",
-           "Dol" : "s",
-           "Lewo" : "a",
-           "Prawo" : "d",
-           "Gora-Prawo" : "wd",
-           "Gora-Lewo" : "wa",
-           "Dol-Lewo" : "sa",
-           "Dol-Prawo" : "sd"}
+    map = {"Gora" : "1000",
+           "Dol" : "0100",
+           "Lewo" : "0010",
+           "Prawo" : "0001",
+           "Gora-Prawo" : "1001",
+           "Gora-Lewo" : "1010",
+           "Dol-Lewo" : "0110",
+           "Dol-Prawo" : "0101"}
     
     if direction not in map.keys():
         print(f"Unsupported direction named {direction}!")
@@ -25,7 +27,8 @@ class UDPClient:
     def __init__(self)-> None:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     
-    def send(self, address: str, port: str, message: str)-> None:
-        print(f"Send data: {message}")
+    def sendto(self, address: str, port: str, message: str)-> None:
+        if config.DEBUG:
+            print(f"Send data: {message}")
         self.socket.sendto(message.encode("utf-8"), (address, port))
 

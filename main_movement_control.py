@@ -7,7 +7,7 @@ from mediapipe.tasks.python import vision
 import pyautogui
 from util.utils import CameraCalibrateAndRemoveDist 
 from util.communication import UDPClient, create_message
-from util.config import UDP_ADDRESS, UDP_PORT
+from util import config
 from typing import Tuple
 from pathlib import Path
 import requests
@@ -48,6 +48,7 @@ def main(src_dir:str,pattern_size:Tuple[int,int],img_size:Tuple[int,int]):
     CCRD.find_calibration_params()
 
     client = UDPClient()
+    message_counter = 0
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -121,10 +122,13 @@ def main(src_dir:str,pattern_size:Tuple[int,int],img_size:Tuple[int,int]):
         
         message = create_message(direction)
         if message is not None:
-            client.send(UDP_ADDRESS, UDP_PORT, message)
+            message_counter += 1
+            client.sendto(config.UDP_ADDRESS, config.UDP_PORT, message)
 
     cap.release()
     cv2.destroyAllWindows()
+    if config.DEBUG:
+        print(f"Sended {message_counter} messages.")
 
 if __name__ == "__main__":
     src_dir:str = "img" # (calibration directory name)
