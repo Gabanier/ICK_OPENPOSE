@@ -37,7 +37,7 @@ def main(src_dir:str,pattern_size:Tuple[int,int],img_size:Tuple[int,int]):
     mp_drawing_styles = mp.solutions.drawing_styles
     hands = mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
-    base_options = python.BaseOptions(model_asset_path=Path("util/gesture_recognizer.task"))
+    base_options = python.BaseOptions(model_asset_path=str(Path("util/gesture_recognizer.task").resolve()))
     options = vision.GestureRecognizerOptions(base_options=base_options,
                                               num_hands=2)
     recognizer = vision.GestureRecognizer.create_from_options(options)
@@ -46,9 +46,10 @@ def main(src_dir:str,pattern_size:Tuple[int,int],img_size:Tuple[int,int]):
 
     cap = cv2.VideoCapture(0)
 
-    CCRD = CameraCalibrateAndRemoveDist(src_dir,pattern_size,img_size)
-    CCRD.find_chessboard_corners()
-    CCRD.find_calibration_params()
+    ## Uncomment if img directory has a
+    # CCRD = CameraCalibrateAndRemoveDist(src_dir,pattern_size,img_size)
+    # CCRD.find_chessboard_corners()
+    # CCRD.find_calibration_params()
 
     client = UDPClient()
     message_counter = 0
@@ -59,7 +60,7 @@ def main(src_dir:str,pattern_size:Tuple[int,int],img_size:Tuple[int,int]):
             break
         
         frame = cv2.flip(frame, 1)
-        frame = CCRD.undistort_image(frame)
+        # frame = CCRD.undistort_image(frame)
         h, w, _ = frame.shape
         # rgb_frame1 = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -91,25 +92,26 @@ def main(src_dir:str,pattern_size:Tuple[int,int],img_size:Tuple[int,int]):
                 
                     x, y = int(finger_tip.x * w), int(finger_tip.y * h)
                     
-                    dx = finger_tip.x - wrist.x
-                    dy = wrist.y - finger_tip.y
+                    dx = finger_tip.x - finger_base.x
+                    dy = finger_base.y - finger_tip.y
                     angle_rad = math.atan2(dy, dx)
                     angle_deg = (math.degrees(angle_rad) + 360) % 360
-                    cv2.putText(frame, f"{int(angle_deg)} st.", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
+                    # cv2.putText(frame, f"{int(angle_deg)} st.", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
                     
                     direction = "None"
                     for (lb, ub), name in DIRECTIONS:
                         if lb <= angle_deg <= ub:
                             direction = name
                 
-                cv2.putText(frame, f"Sterowanie: {direction}", (10, 110), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
+                # cv2.putText(frame, f"Sterowanie: {direction}", (10, 110), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
                 gesture = recognition_result.gestures[index][0].category_name
                 handedness = recognition_result.handedness[index][0].category_name
                 if handedness == "Left":
                     cv2.putText(frame, f"Right: {gesture}", (10, 210), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
                     screen_x = int(finger_tip.x * screen_width)
                     screen_y = int(finger_tip.y * screen_height)
-                    pyautogui.moveTo(screen_x, screen_y)
+                    cv2.putText(frame, f"Sterowanie: {direction}", (10, 110), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
+                    # pyautogui.moveTo(screen_x, screen_y)
 
                 elif handedness == "Right":
                     cv2.putText(frame, f"Left: {gesture}", (10, 310), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
